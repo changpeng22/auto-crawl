@@ -30,7 +30,6 @@ jobs:
       - name: Run a one-line script
         run: |
           echo "hello"
-          echo ${{EMAIL}}
           echo ${{vars.EMAIL}}
           echo ${{secrets.TOEMAIL}}
 
