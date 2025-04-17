@@ -1,26 +1,22 @@
 import requests
 import re
-def download_github_markdown(github_blob_url, save_path):
+import smtplib
+import os
+from email.message import EmailMessage
+
+def download_github_markdown(github_blob_url):
     raw_url = github_blob_url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
     
     response = requests.get(raw_url)
-    
+
+    content = " "
     if response.status_code == 200:
         with open(save_path, "w", encoding="utf-8") as f:
-            f.write(response.text)
+            content = response.text
         print(f"✅ 文件已保存为 {save_path}")
     else:
         print(f"❌ 下载失败，状态码: {response.status_code}")
-
-# 示例使用
-url = "https://github.com/dw-dengwei/daily-arXiv-ai-enhanced/blob/main/data/2025-04-16.md"
-save_file = "2025-04-16.md"
-
-download_github_markdown(url, save_file)
-
-
-
-import re
+    return content
 
 def filter_md_by_div_blocks(text, keep_keywords):
     # 找出所有 <div id=...></div>
@@ -40,17 +36,41 @@ def filter_md_by_div_blocks(text, keep_keywords):
 
     return "\n".join(filtered_blocks)
 
-with open(save_file, "r", encoding="utf-8") as f:
-    md_text = f.read()
+def send_markdown_email(
+    smtp_server, smtp_port,
+    sender_email, sender_password,
+    receiver_email,
+    subject
+):
+    msg = EmailMessage()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = subject
+    # 添加内容
+    msg.set_content(filtered_text)
+
+    # 发送邮件
+    with smtplib.SMTP_SSL(smtp_server, smtp_port) as smtp:
+        smtp.login(sender_email, sender_password)
+        smtp.send_message(msg)
+
+    print(f"✅ 邮件已发送")
+    
+url = f"https://github.com/dw-dengwei/daily-arXiv-ai-enhanced/blob/main/data/{datetime.now().strftime("%Y-%m-%d")}.md"
+content = download_github_markdown(url)
 
 # 保留
 keep_keywords = [f"cs.{flag} [[Back]](#toc)" for flag in ["CL","AI", "CV"]]
-filtered_text = filter_md_by_div_blocks(md_text, keep_keywords)
+filtered_text = filter_md_by_div_blocks(content, keep_keywords)
+print("✅ md文件处理完成")
 
-# 保存
-with open("filtered_output.md", "w", encoding="utf-8") as f:
-    f.write(filtered_text)
-
-print("✅ 处理完成，已保存为 filtered_output.md")
+send_markdown_email(
+    smtp_server="smtp.163.com",          
+    smtp_port=465,
+    sender_email=os.getenv("SEND_EMAIL"),
+    sender_password=os.getenv("SEND_EMAIL_ENTROPY"),
+    receiver_email=os.getenv("RECEIVE_EMAIL"),
+    subject="每日 arXiv 摘要",
+)
 
     
