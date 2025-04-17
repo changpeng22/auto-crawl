@@ -1,2 +1,3 @@
 
-echo "邮件发送开始"
+echo "数据爬取"
+python crawl.py
