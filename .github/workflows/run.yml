@@ -21,8 +21,8 @@ jobs:
     - name: Run script
       run: |
         source .venv/bin/activate
-        export EMAIL_USERNAME=${{secrets.EMAILNAME}}
-        export EMAIL_PASSWORD=${{secrets.EMAILPASSWORD}}
-        export TO_EMAIL=${{vars.EMAIL}}
+        export EMAIL_USERNAME=${{secrets.EMAIL_USERNAME}}
+        export EMAIL_PASSWORD=${{secrets.EMAIL_PASSWORD}}
+        export EMAIL_TO=${{secrets.EMAIL_TO}}
         bash run.sh
       
