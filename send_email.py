@@ -1,38 +1,57 @@
-import smtplib
-from email.message import EmailMessage
-import markdown
-import os
-# 配置信息
-smtp_server = "smtp.163.com"
-smtp_port = 465
-sender_email = os.getenv("EMAIL_USERNAME")
-sender_password = os.getenv("EMAIL_PASSWORD")
-receiver_email = os.getenv("EMAIL_TO")
+import requests
+import re
+def download_github_markdown(github_blob_url, save_path):
+    # 将 blob 链接替换为 raw
+    raw_url = github_blob_url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
+    
+    response = requests.get(raw_url)
+    
+    if response.status_code == 200:
+        with open(save_path, "w", encoding="utf-8") as f:
+            f.write(response.text)
+        print(f"✅ 文件已保存为 {save_path}")
+    else:
+        print(f"❌ 下载失败，状态码: {response.status_code}")
 
-# 读取 Markdown 文件
-md_file_path = "README.md"
-with open(md_file_path, "r", encoding="utf-8") as f:
-    md_content = f.read()
+# 示例使用
+url = "https://github.com/dw-dengwei/daily-arXiv-ai-enhanced/blob/main/data/2025-04-16.md"
+save_file = "2025-04-16.md"
 
-# 将 Markdown 转为 HTML
-html_content = markdown.markdown(md_content)
+download_github_markdown(url, save_file)
 
-# 构建邮件
-msg = EmailMessage()
-msg['Subject'] = '📄 Markdown 邮件正文示例'
-msg['From'] = sender_email
-msg['To'] = receiver_email
 
-# 设置纯文本备用内容（可选）
-msg.set_content("这是 Markdown 内容的 HTML 渲染版本，请使用支持 HTML 的客户端查看。")
 
-# 设置 HTML 正文
-msg.add_alternative(html_content, subtype='html')
+import re
 
-# 发送邮件
-with smtplib.SMTP(smtp_server, smtp_port) as server:
-    server.starttls()
-    server.login(sender_email, sender_password)
-    server.send_message(msg)
+def filter_md_by_div_blocks(text, keep_keywords):
+    # 找出所有 <div id=...></div>
+    div_tags = re.findall(r"<div id=.*?></div>", text)
+    parts = re.split(r"<div id=.*?></div>", text)
 
-print("✅ 邮件已发送（HTML 来自 Markdown）")
+    # 安全检查：div_tags 的数量应比 parts 少 1（前面可能有 intro）
+    assert len(parts) == len(div_tags) + 1 or len(parts) == len(div_tags)
+
+    # 重组结构，并筛选
+    filtered_blocks = []
+    filtered_blocks.append(parts[0])
+
+    for div_tag, content in zip(div_tags, parts[1:]):
+        if any(keyword in content for keyword in keep_keywords):
+            filtered_blocks.append(div_tag + content)
+
+    return "\n".join(filtered_blocks)
+
+with open(save_file, "r", encoding="utf-8") as f:
+    md_text = f.read()
+
+# 保留 cs.AI 和 cs.RO
+keep_keywords = [f"cs.{flag} [[Back]](#toc)" for flag in ["CL","AI", "CV"]]
+filtered_text = filter_md_by_div_blocks(md_text, keep_keywords)
+
+# 保存
+with open("filtered_output.md", "w", encoding="utf-8") as f:
+    f.write(filtered_text)
+
+print("✅ 处理完成，已保存为 filtered_output.md")
+
+    
