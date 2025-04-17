@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         pip install requests
-        pip install smtplib email six
+        pip install smtplib, email
         
     - name: Run script
       run: |
