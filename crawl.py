@@ -1,7 +1,6 @@
 import requests
 import re
 def download_github_markdown(github_blob_url, save_path):
-    # 将 blob 链接替换为 raw
     raw_url = github_blob_url.replace("github.com", "raw.githubusercontent.com").replace("/blob/", "/")
     
     response = requests.get(raw_url)
@@ -44,7 +43,7 @@ def filter_md_by_div_blocks(text, keep_keywords):
 with open(save_file, "r", encoding="utf-8") as f:
     md_text = f.read()
 
-# 保留 cs.AI 和 cs.RO
+# 保留
 keep_keywords = [f"cs.{flag} [[Back]](#toc)" for flag in ["CL","AI", "CV"]]
 filtered_text = filter_md_by_div_blocks(md_text, keep_keywords)
 
