@@ -7,7 +7,7 @@ smtp_server = "smtp.163.com"
 smtp_port = 465
 sender_email = os.getenv("EMAIL_USERNAME")
 sender_password = os.getenv("EMAIL_PASSWORD")
-receiver_email = os.getenv("TO_EMAIL")
+receiver_email = os.getenv("EMAIL_TO")
 
 # 读取 Markdown 文件
 md_file_path = "README.md"
