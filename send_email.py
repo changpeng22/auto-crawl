@@ -10,7 +10,7 @@ sender_password = os.getenv("EMAIL_PASSWORD")
 receiver_email = os.getenv("TO_EMAIL")
 
 # 读取 Markdown 文件
-md_file_path = "readme.md"
+md_file_path = "README.md"
 with open(md_file_path, "r", encoding="utf-8") as f:
     md_content = f.read()
 
